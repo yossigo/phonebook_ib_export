@@ -65,9 +65,14 @@ def process(infile, outfile):
     header = infile.read(0x244)
     entries = 0
     while True:
-        data = infile.read(0x3ac)
-        if not data:
+        data_hdr = infile.read(2)
+        if not data_hdr:
             break
+        hdr = struct.unpack('BB', data_hdr)
+        data_len = (
+            (hdr[0] >> 4) * 100 + (hdr[0] & 0x0f) * 10 +
+            (hdr[1] >> 4))
+        data = data_hdr + infile.read(data_len - 2)
         entry = Entry(data)
         outfile.write(entry.vcard())
         entries += 1
